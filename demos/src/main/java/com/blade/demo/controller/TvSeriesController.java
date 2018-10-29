@@ -1,13 +1,17 @@
-package com.blade.demo;
+package com.blade.demo.controller;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.*;
 
+import com.blade.demo.pojo.TvSeries;
+import com.blade.demo.TvSeriesDto;
+import com.blade.demo.service.TvSeriesService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -23,16 +27,23 @@ public class TvSeriesController {
 
     private final Log log = LogFactory.getLog(TvSeriesController.class);
 
+    @Autowired
+    TvSeriesService tvSeriesService;
 
     @GetMapping
-    public List<TvSeriesDto> getAll() {
+    public List<TvSeries> getAll() {
         if(log.isTraceEnabled()) {
             log.trace("getAll() ");
         }
 
-        List<TvSeriesDto> list = new ArrayList<>();
-        list.add(createWestWorld());
-        list.add(createPoi());
+//        List<TvSeriesDto> list = new ArrayList<>();
+//        list.add(createWestWorld());
+//        list.add(createPoi());
+        List<TvSeries> list = tvSeriesService.getAllTvSeries();
+        if(log.isTraceEnabled()) {
+            log.trace("查询获得"+list.size() +"条记录");
+        }
+
         return list;
     }
 
@@ -53,7 +64,10 @@ public class TvSeriesController {
 
 
     /*
-    *   只有这里的@Valid，Dto里面的Valid才会生效，否则不生效！
+    *   1、只有这里的@Valid，Dto里面的Valid才会生效，否则不生效！
+    *   2、BindingResult result错误结果由方法返回
+    *       if(result.hasError()){ }
+    *
     * */
     @PostMapping
     public TvSeriesDto insertOne(@Valid @RequestBody TvSeriesDto tvSeriesDto){

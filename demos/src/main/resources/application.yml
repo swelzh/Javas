@@ -10,4 +10,14 @@ spring:
     time-zone: GMT+8
     serialization:
       write-dates-as-timestamps: true  #使用数值timestamp表示日期，true时会忽略date-format
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/tvseries?stringtype=unspecified #&ApplicationName=demos
+    username: root
+    password: 12345678
+    dbcp2:
+      validation-query: select 1
+    driver-class-name: org.postgresql.Driver
 
+
+
+#  mybatis.configuration.mapUnderscoreToCamelCase: true
