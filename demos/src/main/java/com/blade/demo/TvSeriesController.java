@@ -1,13 +1,20 @@
 package com.blade.demo;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.*;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 
 @RestController
@@ -43,14 +50,21 @@ public class TvSeriesController {
         }
     }
 
+
+
+    /*
+    *   只有这里的@Valid，Dto里面的Valid才会生效，否则不生效！
+    * */
     @PostMapping
-    public TvSeriesDto insertOne(@RequestBody TvSeriesDto tvSeriesDto){
+    public TvSeriesDto insertOne(@Valid @RequestBody TvSeriesDto tvSeriesDto){
         if (log.isTraceEnabled()){
             log.trace("insert tvSeriesDto到数据库, 传递进来的参数是"+ tvSeriesDto);
         }
         tvSeriesDto.setId(9999);
         return tvSeriesDto;
     }
+
+
 
     @PutMapping("/{id}")
     public TvSeriesDto updateOne(@PathVariable int id,@RequestBody TvSeriesDto tvSeriesDto){
@@ -67,8 +81,8 @@ public class TvSeriesController {
 
     @DeleteMapping("/{id}")
     public Map<String, String> deleteOne(@PathVariable int id, HttpServletRequest request,
-                                         @RequestBody Map<String,String>  map,
-                         @RequestParam(value="delete_reason", required=false) String deleteReason) throws  Exception{
+                         @RequestParam(value="delete_reason", required=false) String deleteReason,
+                                         @RequestBody Map<String,String>  map) throws  Exception{
         if (log.isTraceEnabled()){
             log.trace("deleteOne: "+ id);
         }
@@ -82,6 +96,34 @@ public class TvSeriesController {
             throw new RuntimeException();
         }
         return result;
+    }
+
+    /*
+    *   上传图片、文件
+    * */
+    @PostMapping(value="/{id}/photos",consumes= MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void addPhoto(@PathVariable int id,
+                         @RequestParam("photo") MultipartFile imgFile) throws Exception{
+        if (log.isTraceEnabled()){
+            log.trace("接受到文件 "+ id +"收到文件: "+ imgFile.getOriginalFilename());
+        }
+
+        FileOutputStream fos = new FileOutputStream("target/" + imgFile.getOriginalFilename());
+        IOUtils.copy(imgFile.getInputStream(), fos);
+        fos.close();
+    }
+
+    /*
+    *   下载图片、文件
+    * */
+    @GetMapping(value="/{id}/icon", produces = MediaType.IMAGE_JPEG_VALUE)
+    public byte[]  getIcon(@PathVariable int id) throws Exception {
+        if (log.isTraceEnabled()){
+            log.trace("getIcon("+id+")");
+        }
+        String iconFile = "target/1.jpeg";
+        InputStream is = new FileInputStream(iconFile);
+        return IOUtils.toByteArray(is);
     }
 
 
